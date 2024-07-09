@@ -2,6 +2,7 @@
 include 'db.php';
 
 $vehicleId = $_POST['vehicleId'];
+$vehicleName = $_POST['vehicleName'];
 $customerName = $_POST['customerName'];
 $bookingDate = $_POST['bookingDate'];
 $returnDate = $_POST['returnDate'];
@@ -17,9 +18,9 @@ if ($result->num_rows > 0) {
     echo "The vehicle is not available for the selected dates.";
 } else {
     // Insert the booking into the database
-    $insertQuery = "INSERT INTO bookings (vehicleId, customerName, bookingDate, returnDate) VALUES (?, ?, ?, ?)";
+    $insertQuery = "INSERT INTO bookings (vehicleId, vehicleName, customerName, bookingDate, returnDate) VALUES (?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($insertQuery);
-    $stmt->bind_param("isss", $vehicleId, $customerName, $bookingDate, $returnDate);
+    $stmt->bind_param("issss", $vehicleId, $vehicleName, $customerName, $bookingDate, $returnDate);
     if ($stmt->execute()) {
         echo "Booking confirmed.";
     } else {
