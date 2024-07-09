@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Booking System</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Vehicle Booking System</h1>
+
+        <div class="mt-4">
+            <h2>Vehicles</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date Registered</th>
+                        <th>Type</th>
+                        <th>Maker</th>
+                        <th>Model</th>
+                        <th>Colour</th>
+                        <th>Fuel</th>
+                        <th>State</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="vehicleTableBody">
+                    <!-- Vehicle rows will be populated here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4">
+            <h2>Book Vehicle</h2>
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label for="vehicleId">Vehicle ID</label>
+                    <input type="number" class="form-control" id="vehicleId" name="vehicleId" required>
+                </div>
+                <div class="form-group">
+                    <label for="customerName">Customer Name</label>
+                    <input type="text" class="form-control" id="customerName" name="customerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="bookingDate">Booking Date</label>
+                    <input type="date" class="form-control" id="bookingDate" name="bookingDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="returnDate">Return Date</label>
+                    <input type="date" class="form-control" id="returnDate" name="returnDate" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Book Vehicle</button>
+            </form>
+        </div>
+
+        <div class="mt-4">
+            <h2>Bookings</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Vehicle ID</th>
+                        <th>Customer Name</th>
+                        <th>Booking Date</th>
+                        <th>Return Date</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingTableBody">
+                    <!-- Booking rows will be populated here by PHP -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Fetch vehicles from API
+            $.ajax({
+                url: 'http://localhost:8080/api/vehicles',
+                method: 'GET',
+                success: function(data) {
+                    let vehicleTableBody = $('#vehicleTableBody');
+                    data.forEach(vehicle => {
+                        let row = `<tr>
+                            <td>${vehicle.id}</td>
+                            <td>${vehicle.dateReg}</td>
+                            <td>${vehicle.type}</td>
+                            <td>${vehicle.maker}</td>
+                            <td>${vehicle.model}</td>
+                            <td>${vehicle.colour}</td>
+                            <td>${vehicle.fuel}</td>
+                            <td>${vehicle.state}</td>
+                            <td><button class="btn btn-primary" onclick="bookVehicle(${vehicle.id})">Book</button></td>
+                        </tr>`;
+                        vehicleTableBody.append(row);
+                    });
+                }
+            });
+    
+            // Handle booking form submission
+            $('#bookingForm').submit(function(event) {
+                event.preventDefault();
+    
+                // Client-side date validation
+                let bookingDate = $('#bookingDate').val();
+                let returnDate = $('#returnDate').val();
+                let currentDate = new Date().toISOString().split('T')[0];
+                
+                if (bookingDate < currentDate || returnDate < currentDate) {
+                    alert("Invalid date. Please select a future date for booking.");
+                    return;
+                }
+    
+                let formData = $(this).serialize();
+    
+                $.ajax({
+                    url: 'book_vehicle.php',
+                    method: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        alert(response);
+                        loadBookings();
+                    }
+                });
+            });
+    
+            // Load bookings
+            function loadBookings() {
+                $.ajax({
+                    url: 'get_bookings.php',
+                    method: 'GET',
+                    success: function(data) {
+                        $('#bookingTableBody').html(data);
+                    }
+                });
+            }
+    
+            loadBookings();
+        });
+    
+        function bookVehicle(vehicleId) {
+            $('#vehicleId').val(vehicleId);
+            $('html, body').animate({
+                scrollTop: $("#bookingForm").offset().top
+            }, 1000);
+        }
+    </script>
+    
+</body>
+</html>
